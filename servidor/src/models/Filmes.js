@@ -1,22 +1,40 @@
-var Sequelize = require('sequelize');
-var sequelize = require('./database');
+const Sequelize = require('sequelize');
+const sequelize = require('./database');
+const genero = require('./Generos'); // Importa o modelo Generos
 
-// importa o modelo – chave forasteira roleID
-var genero = require('./Generos');
-var Filme = sequelize.define('Filmes', {
-    id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
+const Filme = sequelize.define('Filmes', {
+  id: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  descricao: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  titulo: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  foto: {
+    type: Sequelize.STRING,
+    allowNull: false,
+  },
+  generoId: { // Adiciona a chave estrangeira explicitamente
+    type: Sequelize.INTEGER,
+    references: {
+      model: genero, // Referência ao modelo Generos
+      key: 'id', // Coluna referenciada
     },
-    descricao: Sequelize.STRING,
-    titulo: Sequelize.STRING,
-    foto: Sequelize.STRING
-    },
-    {
-        timestamps: false,
-    });
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  },
+}, {
+  timestamps: false, // Desativa os campos `createdAt` e `updatedAt`
+});
 
-Filme.belongsTo(genero);
-genero.hasMany(Filme);
-module.exports = Filme
+// Define o relacionamento
+Filme.belongsTo(genero); // Um Filme pertence a um Genero
+genero.hasMany(Filme); // Um Genero pode ter muitos Filmes
+
+module.exports = Filme;

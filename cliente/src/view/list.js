@@ -26,10 +26,10 @@ export default function ListComponent() {
                 <tr>
                     <th scope="col">#</th>
                     <th scope="col">Role</th>
-                    <th scope="col">Name</th>
+                    <th scope="col">Nome</th>
                     <th scope="col">Email</th>
-                    <th scope="col">Address</th>
-                    <th scope="col">Phone</th>
+                    <th scope="col">Morada</th>
+                    <th scope="col">Telemovel</th>
                     <th colSpan="2">Action</th>
                 </tr>
             </thead>

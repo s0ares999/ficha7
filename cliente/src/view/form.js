@@ -6,7 +6,7 @@ export default function EditComponent() {
         <div>
             <div className="form-row justify-content-center">
                 <div className="form-group col-md-6">
-                    <label htmlFor="inputPassword4">Name </label>
+                    <label htmlFor="inputPassword4">Nome </label>
                     <input type="text" className="form-control"
                         placeholder="Name" />
                 </div>
@@ -20,24 +20,24 @@ export default function EditComponent() {
                 <div className="form-group col-md-6">
                     <label htmlFor="inputState">Role</label>
                     <select id="inputState" className="form-control">
-                        <option defaultValue>Choose...</option>
+                        <option defaultValue>Escolhe...</option>
                         <option value="1">Admin...</option>
                         <option value="2">Project Manager</option>
                         <option value="3">Programer</option>
                     </select>
                 </div>
                 <div className="form-group col-md-6">
-                    <label htmlFor="inputEmail4">Phone</label>
+                    <label htmlFor="inputEmail4">Telemovel</label>
                     <input type="number" className="form-control"
                         placeholder="Phone" />
                 </div>
             </div>
             <div className="form-group">
-                <label htmlFor="inputAddress">Address</label>
+                <label htmlFor="inputAddress">Morada</label>
                 <input type="text" className="form-control" id="inputAddress"
                     placeholder="1234 Main St" />
             </div>
-            <button type="submit" className="btn btn-primary">Save</button>
+            <button type="submit" className="btn btn-primary">Salvar</button>
         </div>
     );
 }
