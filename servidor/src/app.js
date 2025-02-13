@@ -1,23 +1,57 @@
 const express = require('express');
 const cors = require('cors');
+const routes = require('./routes');
+const path = require('path');
+const fs = require('fs');
+
 const app = express();
 
-// Aumentar limite de payload
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+// Criar pasta uploads se não existir
+const uploadsDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
-// Middleware
-app.use(cors());
+// Log de requisições
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+});
+
+// Configuração do CORS
+app.use(cors({
+    origin: 'http://localhost:3001',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Middleware para processar JSON
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Rotas
-const filmesRoutes = require('./routes/FilmesRoute');
-const generosRoutes = require('./routes/GenerosRoute');
+app.use('/api', routes);
 
-app.use('/filmes', filmesRoutes);
-app.use('/generos', generosRoutes);
+// Rota de teste
+app.get('/', (req, res) => {
+    res.json({ message: 'Servidor está rodando!' });
+});
+
+// Tratamento de erros
+app.use((err, req, res, next) => {
+    console.error('Erro na aplicação:', err);
+    res.status(500).json({
+        message: 'Erro interno do servidor',
+        error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+});
 
 const PORT = process.env.PORT || 3000;
 
+// Inicialização do servidor
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
+
+module.exports = app;

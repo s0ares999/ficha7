@@ -1,15 +1,21 @@
 import axios from 'axios';
 
-const API_URL = "http://localhost:3000";
+const API_URL = "http://localhost:3000/api";
 
 class GeneroService {
     // GET - Listar todos os gêneros
-    getGeneros() {
-        return axios.get(`${API_URL}/generos`);
+    async getGeneros() {
+        try {
+            const response = await axios.get(`${API_URL}/generos`);
+            return response.data;
+        } catch (error) {
+            console.error('Erro ao buscar gêneros:', error);
+            throw error;
+        }
     }
 
     // GET - Obter detalhes de um gênero específico
-    getGeneroById(id) {
+    getGenero(id) {
         return axios.get(`${API_URL}/generos/${id}`);
     }
 

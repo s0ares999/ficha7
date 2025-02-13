@@ -11,3 +11,234 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Efeito hover nos cards */
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Estilo atualizado para a barra de pesquisa escura */
+.search-container input {
+    background-color: #212529 !important;
+    border: none !important;
+    color: #fff !important;
+}
+
+.search-container input:focus {
+    background-color: #2c3034 !important; /* Um pouco mais claro quando focado */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    transform: translateY(-1px);
+}
+
+.search-container input::placeholder {
+    color: #6c757d;
+    font-size: 0.95rem;
+}
+
+.search-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* Estilo para os ícones na barra de pesquisa */
+.search-container i {
+    color: #6c757d !important;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.search-container button:hover i {
+    opacity: 1;
+    color: #fff !important;
+}
+
+/* Estilo para os botões de paginação */
+.page-link {
+    border: none;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    background-color: #fff;
+    transition: all 0.2s;
+}
+
+.page-link:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+.page-item.active .page-link {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+/* Estilo para o modal */
+.modal-content {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos da Navbar */
+.navbar {
+    backdrop-filter: blur(10px);
+    background-color: rgba(33, 37, 41, 0.95) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.3rem;
+    padding: 0.5rem 0;
+    transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover {
+    transform: translateY(-1px);
+}
+
+.nav-hover {
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.nav-hover::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background-color: #fff;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+    opacity: 0;
+}
+
+.nav-hover:hover::after {
+    width: 80%;
+    opacity: 1;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+/* Ajuste para o modo mobile */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        padding: 1rem 0;
+    }
+    
+    .nav-hover::after {
+        display: none;
+    }
+    
+    .nav-item {
+        padding: 0.5rem 0;
+    }
+}
+
+/* Estilos dos botões nos cards */
+.btn-primary, .btn-danger {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary:hover, .btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+}
+
+.btn-primary:active, .btn-danger:active {
+    transform: translateY(0);
+}
+
+.btn-primary::after, .btn-danger::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255,255,255,0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.btn-primary:hover::after, .btn-danger:hover::after {
+    opacity: 1;
+}
+
+/* Ajuste do espaçamento geral */
+.container {
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+}
+
+/* Melhorar aparência dos cards */
+.card {
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.12) !important;
+}
+
+.card-img-top {
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* Ajustes do Carousel */
+.hero-carousel-container {
+    padding: 1rem 0;
+}
+
+.carousel {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    border-radius: 15px;
+}
+
+.carousel-caption-custom {
+    padding: 2rem;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.carousel-caption-custom h3 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.carousel-caption-custom p {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.carousel-caption-custom .btn {
+    padding: 0.5rem 2rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.carousel-caption-custom .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
