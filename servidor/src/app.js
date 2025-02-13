@@ -1,26 +1,23 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
-const FilmesRoute = require('./routes/FilmesRoute.js')
-const GenerosRoute = require('./routes/GenerosRoute.js');
 
-//Configuracoes
-app.set("port", process.env.port || 3000);
-//Middlewares
-app.use(express.json());
+// Aumentar limite de payload
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Configurar CORS
-app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access - Control - Allow - Request - Method');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
-    res.header('Allow', 'GET, POST, OPTIONS, PUT, DELETE');
-    next();
+// Middleware
+app.use(cors());
+
+// Rotas
+const filmesRoutes = require('./routes/FilmesRoute');
+const generosRoutes = require('./routes/GenerosRoute');
+
+app.use('/filmes', filmesRoutes);
+app.use('/generos', generosRoutes);
+
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
 });
-
-//Rotas
-app.use('/Filmes', FilmesRoute);
-app.use('/Generos', GenerosRoute);
-
-app.listen(app.get('port'),()=>{
-console.log("Start server on port "+app.get('port'))
-})

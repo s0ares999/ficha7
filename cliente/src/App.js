@@ -1,43 +1,49 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
-import { BrowserRouter as Router, Route, Link, Routes } from "react-router-dom";
-import Form from './view/form';
-import List from './view/list';
-import Edit from './view/edit';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import FilmeForm from './view/FilmeForm';
+import FilmeList from './view/FilmeList';
+import FilmeEdit from './view/FilmeEdit';
 
 function App() {
   return (
     <Router>
       <div className="App">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-          <a class="navbar-brand" href="https://www.estgv.ipv.pt/"
-            style={{ color: 'red', fontWeight: 'bold' }}>www.estgv.ipv.pt</a>
-          <button class="navbar-toggler" type="button" datatoggle="collapse" data-target="#navbarSupportedContent" ariacontrols="navbarSupportedContent" aria-expanded="false" arialabel="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div class="collapse navbar-collapse"
-            id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-              <li class="nav-item active">
-                <Link class="nav-link" to="/"> Employee List </Link>
-              </li>
-            </ul>
-            <Link class="btn btn-success " to="/form">Add
-              Employee</Link>
+        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+          <div className="container">
+            <Link className="navbar-brand" to="/">CinemaDB</Link>
+            <button className="navbar-toggler" type="button" 
+              data-bs-toggle="collapse" 
+              data-bs-target="#navbarNav" 
+              aria-controls="navbarNav" 
+              aria-expanded="false" 
+              aria-label="Toggle navigation">
+              <span className="navbar-toggler-icon"></span>
+            </button>
+            <div className="collapse navbar-collapse" id="navbarNav">
+              <ul className="navbar-nav">
+                <li className="nav-item">
+                  <Link className="nav-link" to="/">Lista de Filmes</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/create">Novo Filme</Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </nav>
-        <div class="container py-4">
-          <div class="row">
-            <Routes>
-              <Route path="/" element={<List />} />
-              <Route path="/form" element={<Form />} />
-              <Route path="/edit/:FilmeId" element={<Edit />} />
-            </Routes>
-          </div>
+
+        <div className="container mt-4">
+          <Routes>
+            <Route path="/" element={<FilmeList />} />
+            <Route path="/create" element={<FilmeForm />} />
+            <Route path="/edit/:id" element={<FilmeEdit />} />
+          </Routes>
         </div>
       </div>
     </Router>
   );
 }
+
 export default App;

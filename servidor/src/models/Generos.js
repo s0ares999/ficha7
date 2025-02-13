@@ -1,16 +1,18 @@
-var Sequelize = require('sequelize');
-var sequelize = require('./database');
-var generos = sequelize.define('generos', {
+const Sequelize = require('sequelize');
+const database = require('./database');
+
+const Generos = database.define('generos', {
     id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
     },
+    descricao: {
+        type: Sequelize.STRING,
+        allowNull: false
+    }
+}, {
+    timestamps: false
+});
 
-    descricao: Sequelize.STRING
-},
-    {
-        timestamps: false,
-    });
-
-module.exports = generos
+module.exports = Generos;

@@ -1,20 +1,23 @@
 const express = require('express');
 const router = express.Router();
+const GenerosController = require('../controllers/GenerosController');
 
-const GenerosControllers = require('../controllers/GenerosControllers.js')
+// Verifique se as funções existem
+console.log('GenerosController:', GenerosController);
 
-router.get('/save', (req, res) => {
-    res.json({ status: 'Filme guardado' });
-});
+// Listar todos os gêneros
+router.get('/', (req, res) => GenerosController.list_genero(req, res));
 
-router.get('/', GenerosControllers.list_genero);
+// Criar novo gênero
+router.post('/create', (req, res) => GenerosController.create_genero(req, res));
 
-router.post('/create', GenerosControllers.create_genero);
+// Atualizar gênero
+router.put('/update/:id', (req, res) => GenerosController.update_genero(req, res));
 
-router.get('/:id', GenerosControllers.detail_genero);
+// Deletar gênero
+router.post('/delete', (req, res) => GenerosController.delete_genero(req, res));
 
-router.put('/update/:id', GenerosControllers.update_genero);
-
-router.post('/delete', GenerosControllers.delete_genero);
+// Reset dos gêneros (nova rota)
+router.post('/reset', (req, res) => GenerosController.reset_generos(req, res));
 
 module.exports = router;
