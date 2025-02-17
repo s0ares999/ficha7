@@ -25,11 +25,14 @@ const AuthController = {
                 });
             }
 
+            // Hash da senha
+            const hashedPassword = await bcrypt.hash(req.body.password, 10);
+
             // Criar novo usuário
             const user = await User.create({
                 name: req.body.name,
                 email: req.body.email,
-                password: req.body.password
+                password: hashedPassword
             });
 
             console.log('Usuário criado com sucesso:', user.id);
@@ -77,16 +80,7 @@ const AuthController = {
 
             console.log('Usuário encontrado:', user ? 'Sim' : 'Não');
 
-            if (!user) {
-                return res.status(401).json({ message: 'Email ou senha inválidos' });
-            }
-
-            console.log('Verificando senha');
-            const validPassword = await bcrypt.compare(password, user.password);
-            
-            console.log('Senha válida:', validPassword ? 'Sim' : 'Não');
-
-            if (!validPassword) {
+            if (!user || !(await bcrypt.compare(password, user.password))) {
                 return res.status(401).json({ message: 'Email ou senha inválidos' });
             }
 

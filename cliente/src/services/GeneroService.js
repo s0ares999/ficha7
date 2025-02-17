@@ -9,7 +9,10 @@ class GeneroService {
             const response = await axios.get(`${API_URL}/generos`);
             return response.data;
         } catch (error) {
-            console.error('Erro ao buscar gêneros:', error);
+            console.error('Erro detalhado:', {
+                status: error.response?.status,
+                url: error.config?.url
+            });
             throw error;
         }
     }

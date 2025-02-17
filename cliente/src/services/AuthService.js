@@ -21,37 +21,16 @@ class AuthService {
 
     async login(email, password) {
         try {
-            const response = await fetch('http://localhost:3000/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password })
-            });
-
-            if (!response.ok) {
-                throw new Error('Erro no login');
+            const response = await axios.post(`${API_URL}/login`, { email, password });
+            if (response.data.token) {
+                localStorage.setItem('user', JSON.stringify(response.data));
+                localStorage.setItem('token', response.data.token);
+                return response.data;
             }
-
-            const data = await response.json();
-            console.log('Resposta do servidor:', data);
-
-            // Estrutura os dados do usuário
-            const userData = {
-                user: {
-                    id: data.user.id,
-                    name: data.user.name || 'Usuário', // Valor padrão caso o nome não venha
-                    email: data.user.email
-                },
-                token: data.token
-            };
-
-            // Salva os dados estruturados
-            this.setUserData(userData);
-            return userData;
+            return false;
         } catch (error) {
-            console.error('Erro no login:', error);
-            throw error;
+            console.error('Erro detalhado:', error.response);
+            throw new Error(error.response?.data?.error || 'Erro no login');
         }
     }
 

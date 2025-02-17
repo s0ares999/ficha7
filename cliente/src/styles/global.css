@@ -95,8 +95,14 @@ a {
 }
 
 .footer {
-  background-color: var(--background-light) !important;
-  color: var(--text-light) !important;
+  background-color: #141414 !important;
+  color: white;
+  padding: 1.5rem 0;
+  margin-top: auto;
+  box-shadow:   0 -2px 4px rgba(0, 0, 0, 0.1), 0 -8px 16px rgba(0, 0, 0, 0.15);
+  position: relative; /* Para a sombra ficar acima do conteúdo */
+  z-index: 10;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .page-link {
@@ -249,4 +255,9 @@ a {
   .hero-description {
     font-size: 1rem;
   }
+
+  .titulo-sem-margem-superior {
+    margin-top: 10 !important;
+  }
+
 } 

@@ -207,13 +207,13 @@ export default function FilmeList() {
                                     <div className="d-flex justify-content-between gap-2">
                                         <Link
                                             to={`/edit/${filme.id}`}
-                                            className="btn btn-primary flex-grow-1 shadow-sm"
+                                            className="btn btn-danger flex-grow-1 shadow-sm"
                                             style={{
                                                 borderRadius: "50px",
                                                 padding: "8px 20px",
                                                 fontWeight: "500",
                                                 transition: "all 0.3s ease",
-                                                background: "linear-gradient(45deg, #007bff, #0056b3)",
+                                                background: "linear-gradient(45deg, #dc3545;,rgb(151, 3, 17);)",
                                                 border: "none"
                                             }}
                                         >

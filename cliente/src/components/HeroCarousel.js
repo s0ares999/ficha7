@@ -23,7 +23,7 @@ export default function HeroCarousel({ filmes }) {
                                     src={`http://localhost:3000/uploads/${filme.foto}`}
                                     alt={filme.titulo}
                                     style={{
-                                        height: '500px',
+                                        height: '610px',
                                         objectFit: 'cover',
                                         objectPosition: 'center'
                                     }}
@@ -32,13 +32,21 @@ export default function HeroCarousel({ filmes }) {
                             </div>
                             <Carousel.Caption className="carousel-caption-custom">
                                 <h3>{filme.titulo}</h3>
-                                <p>{filme.descricao}</p>
+                                <p className="mb-3" style={{ 
+                                    fontSize: '1.1rem',
+                                    lineHeight: '1.4',
+                                    maxWidth: '600px',
+                                    margin: '0 auto',
+                                }}>
+                                    {filme.descricao}
+                                </p>
                                 <Link 
                                     to={`/filme/${filme.id}`} 
                                     className="btn btn-danger hero-btn"
                                     style={{
                                         padding: '8px 24px',
-                                        fontSize: '0.95rem'
+                                        fontSize: '0.95rem',
+                                        marginTop: '1rem'
                                     }}
                                 >
                                     <i className="bi bi-play-fill me-2"></i>

@@ -170,11 +170,7 @@ export default function Layout({ children }) {
                 </main>
             </div>
 
-            <footer className="footer py-4">
-                <div className="container text-center">
-                    <span>© 2024 FilmesFlix - Todos os direitos reservados</span>
-                </div>
-            </footer>
+
 
             <Login 
                 show={showLogin} 
