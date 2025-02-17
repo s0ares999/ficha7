@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const FilmesController = require('../controllers/FilmesController');
-const auth = require('../middleware/authMiddleware');
+const auth = require('../middleware/auth');
 
 // Verifique se as funções existem antes de usar
 console.log('FilmesController:', FilmesController);

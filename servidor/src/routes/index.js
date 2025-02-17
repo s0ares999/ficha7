@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const filmesRoutes = require('./FilmesRoute');
-const GenerosController = require('../controllers/GenerosController');
+const GenerosController = require('../controllers/GeneroController');
 const AuthController = require('../controllers/AuthController');
 
 // Rotas de filmes

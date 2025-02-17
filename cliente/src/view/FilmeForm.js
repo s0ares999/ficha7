@@ -90,7 +90,7 @@ export default function FilmeForm({ filme: filmeInicial }) {
 
     return (
         <div className="container">
-            <h2 className="text-center mb-4">Registar Filme</h2>
+            <h2 className="text-center mb-5">Registar Filme</h2>
             <form onSubmit={handleSubmit} className="needs-validation">
                 {error && <div className="alert alert-danger">{error}</div>}
                 

@@ -174,28 +174,33 @@ export default function FilmeList() {
                                             style={{ 
                                                 height: '300px', 
                                                 objectFit: 'cover',
-                                                borderRadius: "10px 10px 0 0"
+                                                borderRadius: "15px 15px 0 0"
                                             }}
                                         />
                                     ) : (
                                         <div 
                                             className="card-img-top d-flex align-items-center justify-content-center bg-light"
-                                            style={{ height: '300px', borderRadius: "10px 10px 0 0" }}
+                                            style={{ height: '300px', borderRadius: "15px 15px 0 0" }}
                                         >
                                             <i className="bi bi-film" style={{ fontSize: '3rem', color: '#dee2e6' }}></i>
                                         </div>
                                     )}
                                     <div className="card-body">
-                                        <h5 className="card-title text-dark mb-3">{filme.titulo}</h5>
-                                        <p className="card-text text-muted" style={{ fontSize: '0.9rem' }}>
-                                            {filme.descricao.length > 100 
-                                                ? `${filme.descricao.substring(0, 100)}...` 
-                                                : filme.descricao
-                                            }
-                                        </p>
-                                        <span className="badge bg-primary rounded-pill">
+                                        <h5 className="card-title text-dark mb-2">{filme.titulo}</h5>
+                                        <span className="badge bg-primary mb-2">
                                             {generos[filme.genero_id] || 'Carregando...'}
                                         </span>
+                                        <p className="card-text text-muted mt-2" style={{ 
+                                            fontSize: '0.9rem',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: '3',
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            minHeight: '4.5em'
+                                        }}>
+                                            {filme.descricao || 'Sem descrição disponível'}
+                                        </p>
                                     </div>
                                 </Link>
                                 <div className="card-footer bg-transparent border-top-0 pb-3">
@@ -216,7 +221,10 @@ export default function FilmeList() {
                                             Editar
                                         </Link>
                                         <button
-                                            onClick={() => confirmDelete(filme)}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                confirmDelete(filme);
+                                            }}
                                             className="btn btn-danger shadow-sm"
                                             style={{
                                                 borderRadius: "50px",

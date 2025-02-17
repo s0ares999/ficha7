@@ -6,19 +6,30 @@ import FilmeEdit from './view/FilmeEdit';
 import FilmeDetails from './view/FilmeDetails';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Navbar from './components/Navbar';
+import ProfileSelector from './components/ProfileSelector';
+import ManageProfiles from './components/ManageProfiles';
 
 function App() {
   return (
     <Router>
-      <Navbar>
-        <Routes>
-          <Route path="/" element={<FilmeList />} />
-          <Route path="/filmes" element={<FilmeList />} />
-          <Route path="/create" element={<FilmeForm />} />
-          <Route path="/edit/:id" element={<FilmeEdit />} />
-          <Route path="/filme/:id" element={<FilmeDetails />} />
-        </Routes>
-      </Navbar>
+      <Routes>
+        <Route path="/profiles" element={<ProfileSelector />} />
+        <Route path="/manage-profiles" element={<ManageProfiles />} />
+        <Route
+          path="/*"
+          element={
+            <Navbar>
+              <Routes>
+                <Route path="/" element={<FilmeList />} />
+                <Route path="/filmes" element={<FilmeList />} />
+                <Route path="/create" element={<FilmeForm />} />
+                <Route path="/edit/:id" element={<FilmeEdit />} />
+                <Route path="/filme/:id" element={<FilmeDetails />} />
+              </Routes>
+            </Navbar>
+          }
+        />
+      </Routes>
     </Router>
   );
 }

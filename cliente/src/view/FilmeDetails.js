@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from "react-router-dom";
 import FilmeService from "../services/FilmeService";
 
+
 export default function FilmeDetails() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -33,7 +34,7 @@ export default function FilmeDetails() {
                     <div className="col-md-4">
                         {filme.foto ? (
                             <img
-                                src={filme.foto}
+                                src={`http://localhost:3000/uploads/${filme.foto}`}
                                 className="img-fluid rounded-start"
                                 alt={filme.titulo}
                                 style={{ 

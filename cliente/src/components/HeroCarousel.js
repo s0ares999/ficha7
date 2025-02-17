@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Carousel } from 'react-bootstrap';
 
 export default function HeroCarousel({ filmes }) {
-    // Pegar apenas os 5 primeiros filmes que têm foto
     const filmesComFoto = filmes
         .filter(filme => filme.foto)
         .slice(0, 5);
@@ -13,37 +12,43 @@ export default function HeroCarousel({ filmes }) {
     }
 
     return (
-        <div className="hero-carousel-container mt-4">
-            <Carousel className="mb-5">
-                {filmesComFoto.map((filme) => (
-                    <Carousel.Item key={filme.id}>
-                        <img
-                            className="d-block w-100"
-                            src={`http://localhost:3000/uploads/${filme.foto}`}
-                            alt={filme.titulo}
-                            style={{
-                                height: '400px',
-                                objectFit: 'cover',
-                                objectPosition: 'center',
-                                borderRadius: '15px'
-                            }}
-                        />
-                        <Carousel.Caption 
-                            className="carousel-caption-custom"
-                            style={{
-                                background: 'linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.8))',
-                                borderRadius: '0 0 15px 15px'
-                            }}
-                        >
-                            <h3>{filme.titulo}</h3>
-                            <p>{filme.descricao}</p>
-                            <Link to={`/filme/${filme.id}`} className="btn btn-primary btn-lg">
-                                Ver Detalhes
-                            </Link>
-                        </Carousel.Caption>
-                    </Carousel.Item>
-                ))}
-            </Carousel>
+        <div className="hero-carousel-container" style={{ marginTop: '1.5rem' }}>
+            <div className="hero-carousel-wrapper">
+                <Carousel>
+                    {filmesComFoto.map((filme) => (
+                        <Carousel.Item key={filme.id}>
+                            <div className="carousel-image-container">
+                                <img
+                                    className="d-block w-100"
+                                    src={`http://localhost:3000/uploads/${filme.foto}`}
+                                    alt={filme.titulo}
+                                    style={{
+                                        height: '500px',
+                                        objectFit: 'cover',
+                                        objectPosition: 'center'
+                                    }}
+                                />
+                                <div className="image-overlay"></div>
+                            </div>
+                            <Carousel.Caption className="carousel-caption-custom">
+                                <h3>{filme.titulo}</h3>
+                                <p>{filme.descricao}</p>
+                                <Link 
+                                    to={`/filme/${filme.id}`} 
+                                    className="btn btn-danger hero-btn"
+                                    style={{
+                                        padding: '8px 24px',
+                                        fontSize: '0.95rem'
+                                    }}
+                                >
+                                    <i className="bi bi-play-fill me-2"></i>
+                                    Ver Detalhes
+                                </Link>
+                            </Carousel.Caption>
+                        </Carousel.Item>
+                    ))}
+                </Carousel>
+            </div>
         </div>
     );
 } 

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Login from './auth/Login';
 import Register from './auth/Register';
 import AuthService from '../services/AuthService';
-
+import { Dropdown } from 'react-bootstrap';
 
 export default function Layout({ children }) {
     const location = useLocation();
@@ -12,6 +12,9 @@ export default function Layout({ children }) {
     const [showLogin, setShowLogin] = useState(false);
     const [showRegister, setShowRegister] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
+    const isAuthenticated = AuthService.isAuthenticated();
+    const currentProfile = JSON.parse(localStorage.getItem('currentProfile')) || null;
+    const dropdownRef = React.useRef(null);
 
     useEffect(() => {
         const user = AuthService.getCurrentUser();
@@ -21,11 +24,17 @@ export default function Layout({ children }) {
     const handleLoginClick = () => {
         setShowLogin(true);
         setShowRegister(false);
+        if (dropdownRef.current) {
+            dropdownRef.current.click();
+        }
     };
 
     const handleRegisterClick = () => {
         setShowRegister(true);
         setShowLogin(false);
+        if (dropdownRef.current) {
+            dropdownRef.current.click();
+        }
     };
 
     const switchToRegister = () => {
@@ -41,8 +50,32 @@ export default function Layout({ children }) {
     const handleLogout = () => {
         AuthService.logout();
         setCurrentUser(null);
-        navigate('/');
+        navigate('/login');
     };
+
+    const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
+        <div
+            ref={ref}
+            onClick={onClick}
+            className="d-flex align-items-center nav-link"
+            style={{ cursor: 'pointer' }}
+        >
+            {currentProfile && (
+                <img
+                    src={currentProfile.avatar}
+                    alt={currentProfile.name}
+                    className="rounded-circle me-2"
+                    style={{ 
+                        width: '32px', 
+                        height: '32px',
+                        border: `2px solid ${currentProfile.color}`,
+                        objectFit: 'cover'
+                    }}
+                />
+            )}
+            {children}
+        </div>
+    ));
 
     return (
         <div className="d-flex flex-column min-vh-100">
@@ -83,48 +116,48 @@ export default function Layout({ children }) {
                                 </li>
                             )}
                         </ul>
-                        <div className="d-flex gap-2">
-                            {currentUser ? (
-                                <div className="dropdown">
-                                    <button 
-                                        className="btn btn-outline-light dropdown-toggle" 
-                                        type="button" 
-                                        data-bs-toggle="dropdown"
-                                    >
-                                        <i className="bi bi-person-circle me-1"></i>
-                                        {currentUser.user.name}
-                                    </button>
-                                    <ul className="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <button 
-                                                className="dropdown-item text-danger" 
-                                                onClick={handleLogout}
-                                            >
-                                                <i className="bi bi-box-arrow-right me-1"></i>
-                                                Sair
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
-                            ) : (
+                        <ul className="navbar-nav">
+                            {!isAuthenticated ? (
                                 <>
-                                    <button 
-                                        className="btn btn-outline-light" 
-                                        onClick={handleLoginClick}
-                                    >
-                                        <i className="bi bi-box-arrow-in-right me-1"></i>
-                                        Entrar
-                                    </button>
-                                    <button 
-                                        className="btn btn-primary" 
-                                        onClick={handleRegisterClick}
-                                    >
-                                        <i className="bi bi-person-plus me-1"></i>
-                                        Registar
-                                    </button>
+                                    <li className="nav-item">
+                                        <Link className="nav-link" onClick={handleLoginClick}>
+                                            <i className="bi bi-box-arrow-in-right me-2"></i>
+                                            Login
+                                        </Link>
+                                    </li>
+                                    <li className="nav-item">
+                                        <Link className="nav-link" onClick={handleRegisterClick}>
+                                            <i className="bi bi-person-plus me-1"></i>
+                                            Registar Conta
+                                        </Link>
+                                    </li>
                                 </>
+                            ) : (
+                                <li className="nav-item">
+                                    <Dropdown align="end">
+                                        <Dropdown.Toggle as={CustomToggle} ref={dropdownRef}>
+                                            {currentProfile?.name || 'Perfil'}
+                                        </Dropdown.Toggle>
+
+                                        <Dropdown.Menu className="dropdown-menu-dark">
+                                            <Dropdown.Item as={Link} to="/profiles">
+                                                <i className="bi bi-people me-2"></i>
+                                                Trocar Perfil
+                                            </Dropdown.Item>
+                                            <Dropdown.Item as={Link} to="/manage-profiles">
+                                                <i className="bi bi-gear me-2"></i>
+                                                Gerenciar Perfis
+                                            </Dropdown.Item>
+                                            <Dropdown.Divider />
+                                            <Dropdown.Item onClick={handleLogout}>
+                                                <i className="bi bi-box-arrow-right me-2"></i>
+                                                Sair
+                                            </Dropdown.Item>
+                                        </Dropdown.Menu>
+                                    </Dropdown>
+                                </li>
                             )}
-                        </div>
+                        </ul>
                     </div>
                 </div>
             </nav>

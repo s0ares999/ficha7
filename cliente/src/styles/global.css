@@ -72,6 +72,7 @@ body {
   background-color: var(--background-light);
   border: none;
   transition: transform 0.3s ease;
+  
 }
 
 .card:hover {
