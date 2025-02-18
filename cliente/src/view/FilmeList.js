@@ -48,21 +48,21 @@ export default function FilmeList() {
         }
     };
 
-    const handleDelete = async () => {
-        try {
-            await FilmeService.deleteFilme(filmeToDelete.id);
-            setShowDeleteModal(false);
-            carregarFilmes();
-            alert("Filme deletado com sucesso!");
-        } catch (error) {
-            console.error("Erro ao deletar filme:", error);
-            alert("Erro ao deletar filme!");
-        }
-    };
-
-    const confirmDelete = (filme) => {
+    const abrirModalExclusao = (filme) => {
         setFilmeToDelete(filme);
         setShowDeleteModal(true);
+    };
+
+    const handleDeleteConfirmado = async () => {
+        if (!filmeToDelete) return;
+        
+        try {
+            await FilmeService.deleteFilme(filmeToDelete.id);
+            setFilmes(prev => prev.filter(f => f.id !== filmeToDelete.id));
+            setShowDeleteModal(false);
+        } catch (error) {
+            console.error('Erro ao excluir:', error);
+        }
     };
 
     // Filtrar filmes baseado na busca
@@ -97,10 +97,6 @@ export default function FilmeList() {
                         <i className="bi bi-film me-2"></i>
                         Todos os Filmes
                     </h2>
-                    <Link to="/create" className="btn btn-primary">
-                        <i className="bi bi-plus-lg me-2"></i>
-                        Registar Filme
-                    </Link>
                 </div>
 
                 {/* Barra de pesquisa com tema escuro */}
@@ -217,26 +213,19 @@ export default function FilmeList() {
                                                 border: "none"
                                             }}
                                         >
-                                            <i className="bi bi-pencil-square me-2"></i>
+                                            <i className="bi bi-pencil-square text-center me-2"></i>
                                             Editar
                                         </Link>
                                         <button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                confirmDelete(filme);
-                                            }}
-                                            className="btn btn-danger shadow-sm"
-                                            style={{
-                                                borderRadius: "50px",
-                                                padding: "8px 20px",
-                                                fontWeight: "500",
-                                                transition: "all 0.3s ease",
-                                                background: "linear-gradient(45deg, #dc3545, #c82333)",
-                                                border: "none"
+                                            className="btn btn-danger btn-sm rounded-pill"
+                                            onClick={() => abrirModalExclusao(filme)}
+                                            style={{ 
+                                                padding: '0.75rem 1.5rem',
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                             }}
                                         >
-                                            <i className="bi bi-trash-fill me-2"></i>
-                                            Deletar
+                                            <i className="bi bi-trash3-fill me-1"></i>
+                                            Excluir
                                         </button>
                                     </div>
                                 </div>
@@ -288,39 +277,40 @@ export default function FilmeList() {
                 show={showDeleteModal} 
                 onHide={() => setShowDeleteModal(false)}
                 centered
-                className="fade"
             >
-                <Modal.Header closeButton className="border-0">
-                    <Modal.Title className="text-danger">
-                        <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                <Modal.Header closeButton className="bg-danger text-white">
+                    <Modal.Title>
+                        <i className="bi bi-exclamation-triangle me-2"></i>
                         Confirmar Exclusão
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <p className="mb-0">
-                        Tem certeza que deseja deletar o filme <strong>{filmeToDelete?.titulo}</strong>?
+                    <p className="lead">
+                        Deseja realmente excluir <strong>"{filmeToDelete?.titulo}"</strong>?
                     </p>
-                    <small className="text-muted">
-                        Esta ação não pode ser desfeita.
-                    </small>
+                    <p className="text-muted small">
+                        Esta ação removerá permanentemente o registro do sistema.
+                    </p>
                 </Modal.Body>
-                <Modal.Footer className="border-0">
-                    <Button 
-                        variant="light" 
+                <Modal.Footer>
+                    <button
+                        className="btn btn-outline-secondary btn-lg"
                         onClick={() => setShowDeleteModal(false)}
-                        className="rounded-pill"
                     >
-                        <i className="bi bi-x-lg me-2"></i>
                         Cancelar
-                    </Button>
-                    <Button 
-                        variant="danger" 
-                        onClick={handleDelete}
-                        className="rounded-pill"
+                    </button>
+                    <button
+                        className="btn btn-danger btn-lg"
+                        onClick={handleDeleteConfirmado}
+                        style={{
+                            background: '#dc3545',
+                            borderColor: '#dc3545',
+                            fontWeight: 500
+                        }}
                     >
-                        <i className="bi bi-trash me-2"></i>
-                        Deletar
-                    </Button>
+                        <i className="bi bi-trash3-fill me-2"></i>
+                        Confirmar Exclusão
+                    </button>
                 </Modal.Footer>
             </Modal>
         </>

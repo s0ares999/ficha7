@@ -7,7 +7,7 @@ export default function Footer() {
         <div className="row">
           <div className="col-md-6 text-center text-md-start">
             <h5>FilmesFlix</h5>
-            <p className="mb-0">Sua plataforma de filmes preferida</p>
+            <p className="mb-0">A tua plataforma de filmes preferida</p>
           </div>
           <div className="col-md-6 text-center text-md-end mt-3 mt-md-0">
             <div className="social-links">

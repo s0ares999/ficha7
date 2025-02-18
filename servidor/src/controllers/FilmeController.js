@@ -1,6 +1,7 @@
 const Filme = require('../models/Filme');
 const path = require('path');
 const fs = require('fs');
+const Genero = require('../models/Genero');
 
 class FilmeController {
     async list(req, res) {
@@ -49,57 +50,38 @@ class FilmeController {
 
     async create(req, res) {
         try {
-            console.log('=== Início do create ===');
-            console.log('Headers:', req.headers);
-            console.log('Body:', req.body);
-            console.log('File:', req.file);
+            console.log('Dados recebidos:', req.body);
+            console.log('Arquivo recebido:', req.file);
 
             const { titulo, descricao, genero_id } = req.body;
+            const foto = req.file.filename;
 
-            // Validação dos campos
             if (!titulo || !descricao || !genero_id) {
-                console.log('Campos faltando:', { titulo, descricao, genero_id });
-                return res.status(400).json({
-                    message: 'Todos os campos são obrigatórios',
-                    received: { titulo, descricao, genero_id }
-                });
+                return res.status(400).json({ error: 'Dados incompletos' });
             }
 
-            let fotoPath = null;
-            if (req.file) {
-                console.log('Arquivo recebido:', req.file);
-                fotoPath = req.file.filename;
-                console.log('Caminho da foto:', fotoPath);
+            if (isNaN(genero_id)) {
+                return res.status(400).json({ error: 'ID de gênero inválido' });
             }
 
-            // Criar o filme
-            console.log('Criando filme com dados:', {
+            const novoFilme = await Filme.create({
                 titulo,
                 descricao,
-                genero_id,
-                foto: fotoPath
+                genero_id: parseInt(genero_id, 10),
+                foto
             });
 
-            const filme = await Filme.create({
-                titulo,
-                descricao,
-                genero_id: parseInt(genero_id),
-                foto: fotoPath
-            });
-
-            console.log('Filme criado com sucesso:', filme.toJSON());
-            return res.status(201).json(filme);
+            console.log('Filme criado:', novoFilme.toJSON());
+            res.status(201).json(novoFilme);
 
         } catch (error) {
-            console.error('=== Erro ao criar filme ===');
-            console.error('Mensagem:', error.message);
-            console.error('Stack:', error.stack);
-            
-            return res.status(500).json({
-                message: 'Erro ao criar filme',
-                error: error.message,
-                details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            console.error('Erro detalhado:', {
+                message: error.message,
+                stack: error.stack,
+                body: req.body,
+                file: req.file
             });
+            res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
 
@@ -141,26 +123,16 @@ class FilmeController {
 
     async delete(req, res) {
         try {
-            const { id } = req.params;
-            const filme = await Filme.findByPk(id);
-            
+            const filme = await Filme.findByPk(req.params.id);
             if (!filme) {
-                return res.status(404).json({ message: 'Filme não encontrado' });
-            }
-
-            // Deleta a foto se existir
-            if (filme.foto) {
-                const fotoPath = path.join(__dirname, '../../uploads', filme.foto);
-                if (fs.existsSync(fotoPath)) {
-                    fs.unlinkSync(fotoPath);
-                }
+                return res.status(404).json({ error: 'Filme não encontrado' });
             }
 
             await filme.destroy();
-            res.json({ message: 'Filme excluído com sucesso' });
+            res.status(204).send();
         } catch (error) {
             console.error('Erro ao excluir filme:', error);
-            res.status(500).json({ message: 'Erro ao excluir filme' });
+            res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
 }

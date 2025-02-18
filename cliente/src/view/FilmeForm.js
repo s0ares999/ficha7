@@ -4,9 +4,9 @@ import FilmeService from "../services/FilmeService";
 import GeneroService from "../services/GeneroService";
 import AuthService from "../services/AuthService";
 
-export default function FilmeForm({ filme: filmeInicial }) {
+export default function FilmeForm({ filme: initialData, isEditing = false }) {
     const navigate = useNavigate();
-    const [filme, setFilme] = useState({
+    const [filme, setFilme] = useState(initialData || {
         titulo: '',
         descricao: '',
         genero_id: '',
@@ -19,34 +19,37 @@ export default function FilmeForm({ filme: filmeInicial }) {
 
     useEffect(() => {
         if (!AuthService.isAuthenticated()) {
-            navigate('/login', { state: { from: '/filmes/novo' } });
+            navigate('/login', { state: { from: '/filmes' } });
             return;
         }
 
         carregarGeneros();
-        if (filmeInicial) {
-            setFilme(filmeInicial);
-            if (filmeInicial.foto) {
-                setPreview(filmeInicial.foto);
+        if (initialData) {
+            setFilme(initialData);
+            if (initialData.foto) {
+                setPreview(initialData.foto);
             }
         }
-    }, [filmeInicial, navigate]);
+    }, [initialData, navigate]);
 
     const carregarGeneros = async () => {
         try {
-            const response = await GeneroService.getGeneros();
-            console.log('Gêneros carregados:', response);
-            setGeneros(response);
+            const dados = await GeneroService.getGeneros();
+            setGeneros(dados);
         } catch (error) {
             console.error('Erro ao carregar gêneros:', error);
-            setError('Erro ao carregar gêneros');
         }
     };
 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
         
-        if (name === 'foto' && files && files[0]) {
+        if (name === 'genero') {
+            setFilme(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        } else if (name === 'foto' && files && files[0]) {
             setFilme(prev => ({
                 ...prev,
                 [name]: files[0]
@@ -65,35 +68,60 @@ export default function FilmeForm({ filme: filmeInicial }) {
         setLoading(true);
         setError('');
 
+        // Validação completa
+        const camposObrigatorios = [
+            { campo: filme.titulo, nome: 'título' },
+            { campo: filme.descricao, nome: 'descrição' },
+            { campo: filme.genero_id, nome: 'gênero' },
+            { campo: filme.foto, nome: 'foto' }
+        ];
+
+        const campoFaltante = camposObrigatorios.find(c => !c.campo);
+        if (campoFaltante) {
+            return setError(`Campo ${campoFaltante.nome} é obrigatório`);
+        }
+
         try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error('Usuário não está autenticado');
+            const formData = new FormData();
+            formData.append('titulo', filme.titulo);
+            formData.append('descricao', filme.descricao);
+            formData.append('genero_id', filme.genero_id);
+            formData.append('foto', filme.foto);
+
+            for (let [key, value] of formData.entries()) {
+                console.log(key, value);
             }
 
-            if (filmeInicial) {
-                await FilmeService.updateFilme(filmeInicial.id, filme);
+            if (isEditing) {
+                await FilmeService.updateFilme(filme.id, formData);
             } else {
-                await FilmeService.createFilme(filme);
+                await FilmeService.createFilme(formData);
             }
-            
-            alert('Filme salvo com sucesso!');
-            
             navigate('/filmes');
         } catch (error) {
-            console.error('Erro ao salvar filme:', error);
-            setError('Erro ao salvar filme. Por favor, tente novamente.');
+            console.error('Erro completo:', error.response?.data);
+            setError(error.message || 'Erro ao salvar filme');
         } finally {
             setLoading(false);
         }
     };
 
+    console.log('Estado atual do filme:', {
+        titulo: filme.titulo?.length,
+        descricao: filme.descricao?.length,
+        genero_id: filme.genero_id,
+        foto: Boolean(filme.foto)
+    });
+
     return (
-        <div className="container">
-            <h2 className="text-center mb-5">Registar Filme</h2>
+        <div className="container mt-5">
+            <h2 className="text-center mb-4">
+                {isEditing ? 'Editar Filme' : 'Registrar Novo Filme'}
+            </h2>
+
             <form onSubmit={handleSubmit} className="needs-validation">
                 {error && <div className="alert alert-danger">{error}</div>}
-                
+
                 <div className="mb-3">
                     <label htmlFor="titulo" className="form-label">Título</label>
                     <input
@@ -120,22 +148,26 @@ export default function FilmeForm({ filme: filmeInicial }) {
                 </div>
 
                 <div className="mb-3">
-                    <label htmlFor="genero_id" className="form-label">Gênero</label>
-                    <select
-                        className="form-select"
-                        id="genero_id"
-                        name="genero_id"
-                        value={filme.genero_id || ''}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Selecione um gênero</option>
-                        {generos && generos.map(genero => (
-                            <option key={genero.id} value={genero.id}>
-                                {genero.nome}
-                            </option>
-                        ))}
-                    </select>
+                    <label htmlFor="genero" className="form-label">Gênero</label>
+                    {generos.length > 0 ? (
+                        <select
+                            className="form-select"
+                            id="genero_id"
+                            name="genero_id"
+                            value={filme.genero_id}
+                            onChange={handleChange}
+                            required
+                        >
+                            <option value="">Selecione um gênero</option>
+                            {generos.map((genero) => (
+                                <option key={genero.id} value={genero.id}>
+                                    {genero.nome}
+                                </option>
+                            ))}
+                        </select>
+                    ) : (
+                        <p>Carregando gêneros...</p>
+                    )}
                 </div>
 
                 <div className="mb-3">
@@ -164,7 +196,7 @@ export default function FilmeForm({ filme: filmeInicial }) {
                         className="btn btn-primary"
                         disabled={loading}
                     >
-                        {loading ? 'Salvando...' : (filmeInicial ? 'Atualizar' : 'Criar')}
+                        {loading ? 'Salvando...' : (isEditing ? 'Atualizar' : 'Criar')}
                     </button>
                     <button 
                         type="button" 

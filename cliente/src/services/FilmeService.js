@@ -53,7 +53,7 @@ class FilmeService {
     async getFilmes() {
         try {
             console.log('Buscando filmes...');
-            const response = await this.axios.get('/filmes');
+            const response = await this.axios.get(`${API_URL}/filmes`);
             console.log('Filmes recebidos:', response.data);
             return response.data;
         } catch (error) {
@@ -67,65 +67,38 @@ class FilmeService {
         return axios.get(`${API_URL}/filmes/${filmeId}`);
     }
 
-    async createFilme(filmeData) {
-        try {
-            console.log('Dados do filme a serem enviados:', filmeData);
-            
-            const formData = new FormData();
-            formData.append('titulo', filmeData.titulo);
-            formData.append('descricao', filmeData.descricao);
-            formData.append('genero_id', filmeData.genero_id);
-            if (filmeData.foto) {
-                formData.append('foto', filmeData.foto);
-            }
-
-            // Log do FormData
-            for (let pair of formData.entries()) {
-                console.log(pair[0] + ': ' + pair[1]);
-            }
-
-            const response = await this.axios.post('/filmes', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Erro detalhado:', error.response);
-            throw error;
+    async createFilme(formData) {
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+            throw new Error('Usuário não autenticado');
         }
+
+        return axios.post(`${API_URL}/filmes`, formData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
     }
 
-    async updateFilme(id, filme) {
-        try {
-            const formData = new FormData();
-            formData.append('titulo', filme.titulo);
-            formData.append('descricao', filme.descricao);
-            formData.append('genero_id', filme.genero_id);
-            if (filme.foto) {
-                formData.append('foto', filme.foto);
+    async updateFilme(id, formData) {
+        const token = localStorage.getItem('token');
+        return axios.put(`${API_URL}/filmes/${id}`, formData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data'
             }
-
-            const response = await this.axios.put(`/filmes/${id}`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Erro ao atualizar filme:', error);
-            throw error;
-        }
+        });
     }
 
     async deleteFilme(id) {
-        try {
-            const response = await this.axios.delete(`/filmes/${id}`);
-            return response.data;
-        } catch (error) {
-            console.error('Erro ao deletar filme:', error);
-            throw error;
-        }
+        const token = localStorage.getItem('token');
+        return axios.delete(`${API_URL}/filmes/${id}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
     }
 }
 

@@ -6,6 +6,7 @@ const AuthController = require('./controllers/AuthController');
 const authMiddleware = require('./middleware/auth');
 const multer = require('multer');
 const path = require('path');
+const upload = require('./config/multerConfig');
 
 // Configuração do Multer
 const storage = multer.diskStorage({
@@ -21,7 +22,7 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ 
+const uploadMulter = multer({ 
     storage: storage,
     fileFilter: (req, file, cb) => {
         const allowedTypes = /jpeg|jpg|png|gif/;
@@ -42,9 +43,9 @@ router.post('/auth/register', AuthController.register);
 // Rotas de Filmes
 router.get('/filmes', FilmeController.list);
 router.get('/filmes/:id', FilmeController.getById);
-router.post('/filmes', authMiddleware, upload.single('foto'), FilmeController.create);
-router.put('/filmes/:id', authMiddleware, upload.single('foto'), FilmeController.update);
-router.delete('/filmes/:id', authMiddleware, FilmeController.delete);
+router.post('/filmes', upload.single('foto'), FilmeController.create);
+router.put('/filmes/:id', upload.single('foto'), FilmeController.update);
+router.delete('/filmes/:id', FilmeController.delete);
 
 // Rotas de Gêneros
 router.get('/generos', GeneroController.list);

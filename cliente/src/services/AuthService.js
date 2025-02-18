@@ -1,4 +1,5 @@
 import axios from "axios";
+import { jwtDecode } from 'jwt-decode';
 
 const API_URL = "http://localhost:3000/api/auth";
 
@@ -96,6 +97,45 @@ class AuthService {
     removeToken() {
         localStorage.removeItem('token');
     }
+
+    verificarToken() {
+        const token = localStorage.getItem('token');
+        if (!token) return false;
+        
+        try {
+            const decoded = jwtDecode(token);
+            return decoded.exp > Date.now() / 1000;
+        } catch (error) {
+            console.error('Erro na decodificação:', error);
+            return false;
+        }
+    }
+
+    async renovarToken() {
+        try {
+            const response = await axios.post('/auth/refresh', {}, {
+                withCredentials: true
+            });
+            localStorage.setItem('token', response.data.token);
+            return response.data.token;
+        } catch (error) {
+            this.logout();
+            throw error;
+        }
+    }
 }
+
+// Interceptar requisições
+axios.interceptors.response.use(
+    response => response,
+    async error => {
+        if (error.response?.status === 401) {
+            const novoToken = await new AuthService().renovarToken();
+            error.config.headers.Authorization = `Bearer ${novoToken}`;
+            return axios(error.config);
+        }
+        return Promise.reject(error);
+    }
+);
 
 export default new AuthService(); 

@@ -13,7 +13,7 @@ const Filme = database.define('filmes', {
         allowNull: false
     },
     descricao: {
-        type: Sequelize.TEXT,
+        type: Sequelize.STRING,
         allowNull: false
     },
     foto: {
@@ -23,9 +23,14 @@ const Filme = database.define('filmes', {
     genero_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: {
-            model: 'generos',
-            key: 'id'
+        validate: {
+            isInt: {
+                msg: 'O ID do gênero deve ser um número inteiro'
+            },
+            min: {
+                args: [1],
+                msg: 'ID do gênero deve ser maior que 0'
+            }
         }
     }
 });

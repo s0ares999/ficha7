@@ -3,11 +3,19 @@ const Genero = require('../models/Genero');
 class GeneroController {
     async list(req, res) {
         try {
-            const generos = await Genero.findAll();
+            const generos = await Genero.findAll({
+                attributes: ['id', 'nome'],
+                order: [['nome', 'ASC']]
+            });
+            
+            if (generos.length === 0) {
+                return res.status(404).json({ message: 'Nenhum gênero encontrado' });
+            }
+            
             res.json(generos);
         } catch (error) {
-            console.error('Erro ao listar gêneros:', error);
-            res.status(500).json({ message: 'Erro ao listar gêneros' });
+            console.error('Erro ao buscar gêneros:', error);
+            res.status(500).json({ error: 'Erro interno do servidor' });
         }
     }
 
