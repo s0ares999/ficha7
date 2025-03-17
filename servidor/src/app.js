@@ -3,8 +3,18 @@ const cors = require('cors');
 const routes = require('./routes');
 const path = require('path');
 const fs = require('fs');
+const seedGeneros = require('./models/seed');
 
 const app = express();
+
+// Chama a função de seed ao iniciar o servidor
+seedGeneros()
+    .then(() => {
+        console.log('Seed concluído');
+    })
+    .catch(error => {
+        console.error('Erro no seed:', error);
+    });
 
 // Criar pasta uploads se não existir
 const uploadsDir = path.join(__dirname, '../uploads');

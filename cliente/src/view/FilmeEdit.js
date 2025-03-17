@@ -31,7 +31,7 @@ export default function FilmeEdit() {
             <FilmeForm 
                 filme={filme} 
                 isEditing={true}
-                onSuccess={() => navigate('/filmes')}
+                onSuccess={() => navigate('/')}
             />
         </div>
     );

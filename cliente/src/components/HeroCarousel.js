@@ -5,7 +5,7 @@ import { Carousel } from 'react-bootstrap';
 export default function HeroCarousel({ filmes }) {
     const filmesComFoto = filmes
         .filter(filme => filme.foto)
-        .slice(0, 5);
+        .slice(-5);
 
     if (filmesComFoto.length === 0) {
         return null;
@@ -23,7 +23,7 @@ export default function HeroCarousel({ filmes }) {
                                     src={`http://localhost:3000/uploads/${filme.foto}`}
                                     alt={filme.titulo}
                                     style={{
-                                        height: '610px',
+                                        height: '670px',
                                         objectFit: 'cover',
                                         objectPosition: 'center'
                                     }}
@@ -32,16 +32,17 @@ export default function HeroCarousel({ filmes }) {
                             </div>
                             <Carousel.Caption className="carousel-caption-custom">
                                 <h3>{filme.titulo}</h3>
-                                <p className="mb-3" style={{ 
+                                <p className="mb-3" style={{
                                     fontSize: '1.1rem',
                                     lineHeight: '1.4',
                                     maxWidth: '600px',
                                     margin: '0 auto',
+                                    marginLeft: '17rem'
                                 }}>
                                     {filme.descricao}
                                 </p>
-                                <Link 
-                                    to={`/filme/${filme.id}`} 
+                                <Link
+                                    to={`/filme/${filme.id}`}
                                     className="btn btn-danger hero-btn"
                                     style={{
                                         padding: '8px 24px',
@@ -59,4 +60,4 @@ export default function HeroCarousel({ filmes }) {
             </div>
         </div>
     );
-} 
+}

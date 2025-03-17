@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import FilmeService from "../services/FilmeService";
 import { Link } from "react-router-dom";
-import { Modal, Button } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 import HeroCarousel from '../components/HeroCarousel';
 import GeneroService from '../services/GeneroService';
 
@@ -131,7 +131,7 @@ export default function FilmeList() {
                             }}
                         ></i>
                         {searchTerm && (
-                            <button
+                            <div
                                 className="btn position-absolute"
                                 style={{
                                     right: "15px",
@@ -143,7 +143,7 @@ export default function FilmeList() {
                                 onClick={() => setSearchTerm('')}
                             >
                                 <i className="bi bi-x-lg"></i>
-                            </button>
+                            </div>
                         )}
                     </div>
                 </div>

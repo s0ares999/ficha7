@@ -97,7 +97,7 @@ export default function FilmeForm({ filme: initialData, isEditing = false }) {
             } else {
                 await FilmeService.createFilme(formData);
             }
-            navigate('/filmes');
+            navigate('/');
         } catch (error) {
             console.error('Erro completo:', error.response?.data);
             setError(error.message || 'Erro ao salvar filme');
