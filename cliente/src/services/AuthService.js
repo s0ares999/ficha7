@@ -20,78 +20,81 @@ class AuthService {
         }
     }
 
-    async login(email, password) {
+    static async login(email, password) {
         try {
-            const response = await axios.post(`${API_URL}/login`, { email, password });
-            if (response.data.token) {
-                localStorage.setItem('user', JSON.stringify(response.data));
-                localStorage.setItem('token', response.data.token);
-                return response.data;
+            const response = await axios.post('http://localhost:3000/api/auth/login', {
+                email,
+                password
+            });
+
+            console.log('Resposta do login:', response.data);
+            
+            if (response.data && response.data.token) {
+                this.setUserData(response.data);
+                return true;
             }
             return false;
         } catch (error) {
-            console.error('Erro detalhado:', error.response);
-            throw new Error(error.response?.data?.error || 'Erro no login');
+            console.error('Erro no login:', error);
+            throw error;
         }
     }
 
-    setUserData(userData) {
-        console.log('Salvando dados do usuário:', userData);
-        if (!userData.user || !userData.token) {
-            console.error('Dados do usuário inválidos:', userData);
-            return;
+    static setUserData(data) {
+        if (!data) return;
+        
+        try {
+            // Guarda o token separadamente
+            localStorage.setItem('token', data.token);
+            
+            // Guarda os dados do usuário
+            const userData = {
+                id: data.user.id,
+                name: data.user.name,
+                email: data.user.email
+            };
+            localStorage.setItem('userData', JSON.stringify(userData));
+        } catch (error) {
+            console.error('Erro ao salvar dados do usuário:', error);
         }
-
-        const dataToStore = {
-            user: {
-                id: userData.user.id,
-                name: userData.user.name || 'Usuário',
-                email: userData.user.email
-            },
-            token: userData.token
-        };
-
-        localStorage.setItem('user', JSON.stringify(dataToStore));
-        localStorage.setItem('token', userData.token);
     }
 
-    getUserData() {
-        const userStr = localStorage.getItem('user');
-        console.log('Dados brutos do usuário:', userStr);
-        if (userStr) {
-            try {
-                const userData = JSON.parse(userStr);
-                console.log('Dados do usuário parseados:', userData);
-                return userData;
-            } catch (e) {
-                console.error('Erro ao parsear dados do usuário:', e);
-                return null;
-            }
+    static getUserData() {
+        try {
+            const token = localStorage.getItem('token');
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            return { token, userData };
+        } catch (error) {
+            console.error('Erro ao recuperar dados do usuário:', error);
+            return null;
         }
-        return null;
     }
 
-    isAuthenticated() {
-        const token = this.getToken();
-        const userData = this.getUserData();
-        console.log('Verificando autenticação:', { token, userData });
-        return !!token && !!userData;
+    static isAuthenticated() {
+        const token = localStorage.getItem('token');
+        return !!token; // Retorna true se existir um token
     }
 
-    getToken() {
+    static getToken() {
         return localStorage.getItem('token');
     }
 
-    logout() {
+    static logout() {
         localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('userRole');
-        window.location.reload();
+        localStorage.removeItem('userData');
     }
 
-    getCurrentUser() {
-        return JSON.parse(localStorage.getItem('user'));
+    static getCurrentUser() {
+        try {
+            const userData = localStorage.getItem('userData');
+            if (userData) {
+                return JSON.parse(userData);
+            }
+            return null;
+        } catch (error) {
+            console.error('Erro ao obter usuário atual:', error);
+            return null;
+        }
     }
 
     removeToken() {
@@ -113,13 +116,19 @@ class AuthService {
 
     async renovarToken() {
         try {
-            const response = await axios.post('/auth/refresh', {}, {
-                withCredentials: true
+            const response = await axios.post('http://localhost:3000/api/auth/refresh', {}, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                }
             });
-            localStorage.setItem('token', response.data.token);
-            return response.data.token;
+            
+            if (response.data && response.data.token) {
+                localStorage.setItem('token', response.data.token);
+                return response.data.token;
+            }
+            throw new Error('Token não retornado');
         } catch (error) {
-            this.logout();
+            AuthService.logout();
             throw error;
         }
     }
@@ -138,4 +147,4 @@ axios.interceptors.response.use(
     }
 );
 
-export default new AuthService(); 
+export default AuthService; 

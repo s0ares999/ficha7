@@ -1,37 +1,62 @@
 const Genero = require('../models/Genero');
+const Filme = require('../models/Filme');
+const { Sequelize } = require('sequelize');
+const BaseController = require('./BaseController');
 
-class GeneroController {
+class GeneroController extends BaseController {
     async list(req, res) {
         try {
-            const generos = await Genero.findAll({
-                attributes: ['id', 'nome'],
-                order: [['nome', 'ASC']]
-            });
+            const generos = await Genero.findAll({ order: [['nome', 'ASC']] });
             
             if (generos.length === 0) {
-                return res.status(404).json({ message: 'Nenhum gênero encontrado' });
+                return this.sendNotFound(res, 'Nenhum gênero encontrado');
             }
             
-            res.json(generos);
+            return this.sendSuccess(res, generos);
         } catch (error) {
-            console.error('Erro ao buscar gêneros:', error);
-            res.status(500).json({ error: 'Erro interno do servidor' });
+            return this.handleError(error, res, 'Erro ao listar gêneros');
+        }
+    }
+
+    async getById(req, res) {
+        try {
+            const { id } = req.params;
+            const genero = await Genero.findByPk(id);
+
+            if (!genero) {
+                return this.sendNotFound(res, 'Gênero não encontrado');
+            }
+
+            return this.sendSuccess(res, genero);
+        } catch (error) {
+            return this.handleError(error, res, 'Erro ao buscar gênero');
         }
     }
 
     async create(req, res) {
         try {
             const { nome } = req.body;
-            
-            if (!nome) {
-                return res.status(400).json({ message: 'Nome é obrigatório' });
+
+            if (!nome || nome.trim() === '') {
+                return this.sendBadRequest(res, 'Nome é obrigatório');
             }
 
-            const genero = await Genero.create({ nome });
-            res.status(201).json(genero);
+            // Verifica se já existe um gênero com este nome
+            const existingGenero = await Genero.findOne({
+                where: { nome: nome.trim() }
+            });
+
+            if (existingGenero) {
+                return this.sendBadRequest(res, `O gênero "${nome.trim()}" já existe.`);
+            }
+
+            const genero = await Genero.create({ 
+                nome: nome.trim() 
+            });
+
+            return this.sendCreated(res, genero);
         } catch (error) {
-            console.error('Erro ao criar gênero:', error);
-            res.status(500).json({ message: 'Erro ao criar gênero' });
+            return this.handleError(error, res, 'Erro interno ao criar gênero');
         }
     }
 
@@ -40,20 +65,34 @@ class GeneroController {
             const { id } = req.params;
             const { nome } = req.body;
 
-            if (!nome) {
-                return res.status(400).json({ message: 'Nome é obrigatório' });
+            if (!nome || nome.trim() === '') {
+                return this.sendBadRequest(res, 'Nome é obrigatório');
             }
 
             const genero = await Genero.findByPk(id);
             if (!genero) {
-                return res.status(404).json({ message: 'Gênero não encontrado' });
+                return this.sendNotFound(res, 'Gênero não encontrado');
             }
 
-            await genero.update({ nome });
-            res.json(genero);
+            const existingGenero = await Genero.findOne({
+                where: {
+                    nome: nome.trim(),
+                    id: { [Sequelize.Op.ne]: id }
+                }
+            });
+            if (existingGenero) {
+                return this.sendBadRequest(res, `O nome "${nome.trim()}" já está em uso por outro gênero.`);
+            }
+
+            genero.nome = nome.trim();
+            await genero.save();
+
+            return this.sendSuccess(res, genero);
         } catch (error) {
-            console.error('Erro ao atualizar gênero:', error);
-            res.status(500).json({ message: 'Erro ao atualizar gênero' });
+            if (error.name === 'SequelizeUniqueConstraintError') {
+                return this.sendBadRequest(res, `O nome "${req.body.nome.trim()}" já está em uso.`);
+            }
+            return this.handleError(error, res, 'Erro interno ao atualizar gênero');
         }
     }
 
@@ -63,16 +102,22 @@ class GeneroController {
             const genero = await Genero.findByPk(id);
             
             if (!genero) {
-                return res.status(404).json({ message: 'Gênero não encontrado' });
+                return this.sendNotFound(res, 'Gênero não encontrado');
+            }
+
+            const filmesAssociados = await Filme.count({ where: { genero_id: id } });
+            if (filmesAssociados > 0) {
+                return this.sendBadRequest(res, 
+                    `Não é possível excluir o gênero "${genero.nome}" pois ele está associado a ${filmesAssociados} filme(s). Remova ou altere os filmes primeiro.`
+                );
             }
 
             await genero.destroy();
-            res.json({ message: 'Gênero excluído com sucesso' });
+            return this.sendNoContent(res);
         } catch (error) {
-            console.error('Erro ao excluir gênero:', error);
-            res.status(500).json({ message: 'Erro ao excluir gênero' });
+            return this.handleError(error, res, 'Erro interno ao deletar gênero');
         }
     }
 }
 
-module.exports = new GeneroController();
+module.exports = GeneroController;

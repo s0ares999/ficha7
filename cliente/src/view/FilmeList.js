@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from "react";
 import FilmeService from "../services/FilmeService";
 import { Link } from "react-router-dom";
-import { Modal } from 'react-bootstrap';
 import HeroCarousel from '../components/HeroCarousel';
 import GeneroService from '../services/GeneroService';
+import SwalUtil from "../utils/SwalUtil";
+import AuthService from "../services/AuthService";
+import { useAuth } from "../contexts/AuthContext";
+import Login from "../components/auth/Login";
+import Register from "../components/auth/Register";
 
 export default function FilmeList() {
     const [filmes, setFilmes] = useState([]);
@@ -11,15 +15,41 @@ export default function FilmeList() {
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(6);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [filmeToDelete, setFilmeToDelete] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const { currentUser } = useAuth();
+    const [showLogin, setShowLogin] = useState(false);
+    const [showRegister, setShowRegister] = useState(false);
 
     useEffect(() => {
         carregarFilmes();
-        carregarGeneros();
-    }, []);
+        
+        if (currentUser) {
+            // Usuário está logado, carrega os gêneros
+            carregarGeneros();
+        } else {
+            // Usuário não está logado ou fez logout, limpa os gêneros
+            setGeneros({});
+        }
+    }, [currentUser]);
+
+    const handleLoginClick = () => {
+        setShowLogin(true);
+    };
+
+    const handleRegisterClick = () => {
+        setShowRegister(true);
+    };
+
+    const switchToRegister = () => {
+        setShowLogin(false);
+        setShowRegister(true);
+    };
+
+    const switchToLogin = () => {
+        setShowRegister(false);
+        setShowLogin(true);
+    };
 
     const carregarFilmes = async () => {
         try {
@@ -30,12 +60,29 @@ export default function FilmeList() {
         } catch (error) {
             console.error("Erro ao carregar filmes:", error);
             setError('Erro ao carregar filmes');
+            
+            // Verificar tipo específico de erro
+            if (error.code === 'ERR_NETWORK' || error.message?.includes('Network Error')) {
+                SwalUtil.error(
+                    'Servidor Indisponível', 
+                    'Não foi possível conectar ao servidor. Verifique se o servidor está rodando e tente novamente.'
+                );
+            } else if (error.response?.status === 401) {
+                SwalUtil.error(
+                    'Não Autorizado', 
+                    'Você precisa fazer login para acessar esta funcionalidade.'
+                );
+            } else {
+                SwalUtil.error('Erro!', 'Não foi possível carregar a lista de filmes.');
+            }
         } finally {
             setLoading(false);
         }
     };
 
     const carregarGeneros = async () => {
+        // Não precisamos verificar a autenticação aqui porque o useEffect
+        // já verifica se currentUser existe antes de chamar esta função
         try {
             const data = await GeneroService.getGeneros();
             const generosMap = {};
@@ -45,23 +92,38 @@ export default function FilmeList() {
             setGeneros(generosMap);
         } catch (error) {
             console.error('Erro ao carregar gêneros:', error);
+            
+            // Não mostrar erro quando for problema de autenticação (401)
+            // pois isso é esperado quando o usuário não está logado
+            if (error.response?.status !== 401) {
+                SwalUtil.error('Erro!', 'Não foi possível carregar os gêneros dos filmes.');
+            }
         }
     };
 
     const abrirModalExclusao = (filme) => {
-        setFilmeToDelete(filme);
-        setShowDeleteModal(true);
+        SwalUtil.confirmDelete(
+            'Confirmar Exclusão',
+            `Tem certeza que deseja excluir o filme <strong>"${filme.titulo}"</strong>?<br><small class="text-muted">Esta ação não pode ser desfeita.</small>`,
+            () => handleDeleteConfirmado(filme)
+        );
     };
 
-    const handleDeleteConfirmado = async () => {
-        if (!filmeToDelete) return;
+    const handleDeleteConfirmado = async (filme) => {
+        if (!filme) return;
         
         try {
-            await FilmeService.deleteFilme(filmeToDelete.id);
-            setFilmes(prev => prev.filter(f => f.id !== filmeToDelete.id));
-            setShowDeleteModal(false);
+            SwalUtil.loading('Excluindo...', 'Processando sua solicitação');
+            
+            await FilmeService.deleteFilme(filme.id);
+            setFilmes(prev => prev.filter(f => f.id !== filme.id));
+            
+            SwalUtil.closeLoading();
+            SwalUtil.success('Excluído!', `Filme "${filme.titulo}" excluído com sucesso!`);
         } catch (error) {
             console.error('Erro ao excluir:', error);
+            SwalUtil.closeLoading();
+            SwalUtil.error('Erro!', error.response?.data?.message || 'Erro ao excluir filme.');
         }
     };
 
@@ -80,8 +142,89 @@ export default function FilmeList() {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    if (loading) return <div>Carregando...</div>;
-    if (error) return <div>Erro: {error}</div>;
+    if (loading) return (
+        <div className="container mt-5 text-center">
+            <div className="spinner-border text-primary" role="status">
+                <span className="visually-hidden">Carregando...</span>
+            </div>
+            <p className="mt-3">Carregando filmes...</p>
+        </div>
+    );
+    
+    if (error) return (
+        <div className="container mt-5">
+            <div className="alert alert-danger" role="alert">
+                <h4 className="alert-heading">
+                    <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                    Erro ao carregar filmes
+                </h4>
+                <p>{error}</p>
+                <hr />
+                <p className="mb-0">
+                    Verifique se o servidor está rodando na porta 3000 e tente novamente.
+                    <button 
+                        className="btn btn-outline-danger ms-3"
+                        onClick={carregarFilmes}
+                    >
+                        <i className="bi bi-arrow-clockwise me-2"></i>
+                        Tentar novamente
+                    </button>
+                </p>
+            </div>
+            
+            {currentUser ? (
+                <div className="text-center mt-4">
+                    <Link to="/create" className="btn btn-primary btn-lg">
+                        <i className="bi bi-plus-circle me-2"></i>
+                        Adicionar novo filme
+                    </Link>
+                </div>
+            ) : (
+                <div className="text-center mt-4">
+                    <button onClick={handleLoginClick} className="btn btn-success btn-lg me-3">
+                        <i className="bi bi-box-arrow-in-right me-2"></i>
+                        Entrar
+                    </button>
+                    <button onClick={handleRegisterClick} className="btn btn-outline-primary btn-lg">
+                        <i className="bi bi-person-plus me-2"></i>
+                        Registrar
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+    
+    if (filmes.length === 0 && !loading) return (
+        <div className="container mt-5">
+            <div className="alert alert-info" role="alert">
+                <h4 className="alert-heading">
+                    <i className="bi bi-info-circle-fill me-2"></i>
+                    Nenhum filme encontrado
+                </h4>
+                <p>Ainda não há filmes cadastrados no sistema.</p>
+                {currentUser ? (
+                    <div className="text-center mt-4">
+                        <Link to="/create" className="btn btn-primary">
+                            <i className="bi bi-plus-circle me-2"></i>
+                            Adicionar filme
+                        </Link>
+                    </div>
+                ) : (
+                    <div className="text-center mt-4">
+                        <p>Faça login para adicionar novos filmes.</p>
+                        <button onClick={handleLoginClick} className="btn btn-success me-3">
+                            <i className="bi bi-box-arrow-in-right me-2"></i>
+                            Entrar
+                        </button>
+                        <button onClick={handleRegisterClick} className="btn btn-outline-primary">
+                            <i className="bi bi-person-plus me-2"></i>
+                            Registrar
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
 
     return (
         <>
@@ -184,7 +327,9 @@ export default function FilmeList() {
                                     <div className="card-body">
                                         <h5 className="card-title text-dark mb-2">{filme.titulo}</h5>
                                         <span className="badge bg-primary mb-2">
-                                            {generos[filme.genero_id] || 'Carregando...'}
+                                            {currentUser 
+                                                ? (generos[filme.genero_id] || 'Carregando...') 
+                                                : 'Login necessário'}
                                         </span>
                                         <p className="card-text text-muted mt-2" style={{ 
                                             fontSize: '0.9rem',
@@ -200,34 +345,43 @@ export default function FilmeList() {
                                     </div>
                                 </Link>
                                 <div className="card-footer bg-transparent border-top-0 pb-3">
-                                    <div className="d-flex justify-content-between gap-2">
-                                        <Link
-                                            to={`/edit/${filme.id}`}
-                                            className="btn btn-danger flex-grow-1 shadow-sm"
-                                            style={{
-                                                borderRadius: "50px",
-                                                padding: "8px 20px",
-                                                fontWeight: "500",
-                                                transition: "all 0.3s ease",
-                                                background: "linear-gradient(45deg, #dc3545;,rgb(151, 3, 17);)",
-                                                border: "none"
-                                            }}
-                                        >
-                                            <i className="bi bi-pencil-square text-center me-2"></i>
-                                            Editar
-                                        </Link>
-                                        <button
-                                            className="btn btn-danger btn-sm rounded-pill"
-                                            onClick={() => abrirModalExclusao(filme)}
-                                            style={{ 
-                                                padding: '0.75rem 1.5rem',
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                            }}
-                                        >
-                                            <i className="bi bi-trash3-fill me-1"></i>
-                                            Excluir
-                                        </button>
-                                    </div>
+                                    {currentUser ? (
+                                        <div className="d-flex justify-content-between gap-2">
+                                            <Link
+                                                to={`/edit/${filme.id}`}
+                                                className="btn btn-danger flex-grow-1 shadow-sm"
+                                                style={{
+                                                    borderRadius: "50px",
+                                                    padding: "8px 20px",
+                                                    fontWeight: "500",
+                                                    transition: "all 0.3s ease",
+                                                    background: "linear-gradient(45deg, #dc3545;,rgb(151, 3, 17);)",
+                                                    border: "none"
+                                                }}
+                                            >
+                                                <i className="bi bi-pencil-square text-center me-2"></i>
+                                                Editar
+                                            </Link>
+                                            <button
+                                                className="btn btn-danger btn-sm rounded-pill"
+                                                onClick={() => abrirModalExclusao(filme)}
+                                                style={{ 
+                                                    padding: '0.75rem 1.5rem',
+                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                }}
+                                            >
+                                                <i className="bi bi-trash3-fill me-1"></i>
+                                                Excluir
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center">
+                                            <button onClick={handleLoginClick} className="btn btn-primary w-100">
+                                                <i className="bi bi-lock me-1"></i>
+                                                Faça login para editar
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -272,47 +426,16 @@ export default function FilmeList() {
                     </nav>
                 )}
             </div>
-
-            <Modal 
-                show={showDeleteModal} 
-                onHide={() => setShowDeleteModal(false)}
-                centered
-            >
-                <Modal.Header closeButton className="bg-danger text-white">
-                    <Modal.Title>
-                        <i className="bi bi-exclamation-triangle me-2"></i>
-                        Confirmar Exclusão
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p className="lead">
-                        Deseja realmente excluir <strong>"{filmeToDelete?.titulo}"</strong>?
-                    </p>
-                    <p className="text-muted small">
-                        Esta ação removerá permanentemente o registro do sistema.
-                    </p>
-                </Modal.Body>
-                <Modal.Footer>
-                    <button
-                        className="btn btn-outline-secondary btn-lg"
-                        onClick={() => setShowDeleteModal(false)}
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        className="btn btn-danger btn-lg"
-                        onClick={handleDeleteConfirmado}
-                        style={{
-                            background: '#dc3545',
-                            borderColor: '#dc3545',
-                            fontWeight: 500
-                        }}
-                    >
-                        <i className="bi bi-trash3-fill me-2"></i>
-                        Confirmar Exclusão
-                    </button>
-                </Modal.Footer>
-            </Modal>
+            <Login 
+                show={showLogin} 
+                handleClose={() => setShowLogin(false)}
+                switchToRegister={switchToRegister}
+            />
+            <Register 
+                show={showRegister} 
+                handleClose={() => setShowRegister(false)}
+                switchToLogin={switchToLogin}
+            />
         </>
     );
 }

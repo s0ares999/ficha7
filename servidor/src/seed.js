@@ -1,4 +1,4 @@
-const Genero = require('./Genero');
+const Genero = require('./models/Genero');
 
 async function seedGeneros() {
     try {

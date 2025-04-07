@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import FilmeService from "../services/FilmeService";
 import GeneroService from "../services/GeneroService";
 import AuthService from "../services/AuthService";
+import SwalUtil from "../utils/SwalUtil";
 
 export default function FilmeForm({ filme: initialData, isEditing = false }) {
     const navigate = useNavigate();
@@ -78,7 +79,9 @@ export default function FilmeForm({ filme: initialData, isEditing = false }) {
 
         const campoFaltante = camposObrigatorios.find(c => !c.campo);
         if (campoFaltante) {
-            return setError(`Campo ${campoFaltante.nome} é obrigatório`);
+            setError(`Campo ${campoFaltante.nome} é obrigatório`);
+            setLoading(false);
+            return;
         }
 
         try {
@@ -92,14 +95,26 @@ export default function FilmeForm({ filme: initialData, isEditing = false }) {
                 console.log(key, value);
             }
 
+            // Mostrar alerta de carregamento
+            SwalUtil.loading('Processando', 'Salvando informações do filme...');
+
             if (isEditing) {
                 await FilmeService.updateFilme(filme.id, formData);
+                SwalUtil.closeLoading();
+                SwalUtil.success('Sucesso!', 'Filme atualizado com sucesso!', () => {
+                    navigate('/');
+                });
             } else {
                 await FilmeService.createFilme(formData);
+                SwalUtil.closeLoading();
+                SwalUtil.success('Sucesso!', 'Filme criado com sucesso!', () => {
+                    navigate('/');
+                });
             }
-            navigate('/');
         } catch (error) {
             console.error('Erro completo:', error.response?.data);
+            SwalUtil.closeLoading();
+            SwalUtil.error('Erro!', error.response?.data?.message || 'Erro ao salvar filme');
             setError(error.message || 'Erro ao salvar filme');
         } finally {
             setLoading(false);

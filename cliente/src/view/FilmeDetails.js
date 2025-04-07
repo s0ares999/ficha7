@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from "react-router-dom";
 import FilmeService from "../services/FilmeService";
+import SwalUtil from "../utils/SwalUtil";
 
 
 export default function FilmeDetails() {
@@ -16,7 +17,13 @@ export default function FilmeDetails() {
         } catch (error) {
             setError('Erro ao carregar o filme');
             console.error('Erro:', error);
-            navigate("/");
+            
+            // Usar SwalUtil para mostrar o erro
+            SwalUtil.error(
+                'Erro ao carregar filme', 
+                'Não foi possível carregar os detalhes do filme solicitado.',
+                () => navigate("/")
+            );
         }
     }, [id, navigate]);
 

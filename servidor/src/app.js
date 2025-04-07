@@ -1,9 +1,10 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const routes = require('./routes');
 const path = require('path');
-const fs = require('fs');
-const seedGeneros = require('./models/seed');
+const seedGeneros = require('./seed');
+const FileUtil = require('./utils/FileUtil');
 
 const app = express();
 
@@ -16,11 +17,8 @@ seedGeneros()
         console.error('Erro no seed:', error);
     });
 
-// Criar pasta uploads se não existir
-const uploadsDir = path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-}
+// Garantir que a pasta uploads exista
+FileUtil.ensureUploadDirExists();
 
 // Log de requisições
 app.use((req, res, next) => {

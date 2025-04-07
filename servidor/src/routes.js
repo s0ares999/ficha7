@@ -1,12 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const FilmeController = require('./controllers/FilmeController');
-const GeneroController = require('./controllers/GeneroController');
+const FilmeControllerClass = require('./controllers/FilmeController');
+const GeneroControllerClass = require('./controllers/GeneroController');
 const AuthController = require('./controllers/AuthController');
 const authMiddleware = require('./middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const upload = require('./config/multerConfig');
+
+// Instanciando os controladores
+const FilmeController = new FilmeControllerClass();
+const GeneroController = new GeneroControllerClass();
 
 // Configuração do Multer
 const storage = multer.diskStorage({
@@ -37,20 +41,27 @@ const uploadMulter = multer({
 });
 
 // Rotas de Autenticação
-router.post('/auth/login', AuthController.login);
-router.post('/auth/register', AuthController.register);
+router.post('/auth/login', AuthController.login.bind(AuthController));
+router.post('/auth/register', AuthController.register.bind(AuthController));
+router.post('/auth/refresh', authMiddleware, AuthController.refreshToken.bind(AuthController));
 
 // Rotas de Filmes
-router.get('/filmes', FilmeController.list);
-router.get('/filmes/:id', FilmeController.getById);
-router.post('/filmes', upload.single('foto'), FilmeController.create);
-router.put('/filmes/:id', upload.single('foto'), FilmeController.update);
-router.delete('/filmes/:id', FilmeController.delete);
+router.get('/filmes', FilmeController.list.bind(FilmeController));
+router.get('/filmes/:id', FilmeController.getById.bind(FilmeController));
+router.post('/filmes', authMiddleware, upload.single('foto'), FilmeController.create.bind(FilmeController));
+router.put('/filmes/:id', authMiddleware, upload.single('foto'), FilmeController.update.bind(FilmeController));
+router.delete('/filmes/:id', authMiddleware, FilmeController.delete.bind(FilmeController));
 
 // Rotas de Gêneros
-router.get('/generos', GeneroController.list);
-router.post('/generos', authMiddleware, GeneroController.create);
-router.put('/generos/:id', authMiddleware, GeneroController.update);
-router.delete('/generos/:id', authMiddleware, GeneroController.delete);
+router.get('/generos', authMiddleware, GeneroController.list.bind(GeneroController));
+router.get('/generos/:id', authMiddleware, GeneroController.getById.bind(GeneroController));
+router.post('/generos/create', authMiddleware, GeneroController.create.bind(GeneroController));
+router.put('/generos/update/:id', authMiddleware, GeneroController.update.bind(GeneroController));
+router.delete('/generos/delete/:id', authMiddleware, GeneroController.delete.bind(GeneroController));
+
+// Rota de Teste (Opcional)
+router.get('/', (req, res) => {
+  res.json({ message: 'API FilmesFlix está operacional!' });
+});
 
 module.exports = router; 

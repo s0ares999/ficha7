@@ -1,14 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const filmesRoutes = require('./FilmesRoute');
-const GenerosController = require('../controllers/GeneroController');
+const generosRoutes = require('./GenerosRoute');
 const AuthController = require('../controllers/AuthController');
+const authMiddleware = require('../middleware/authMiddleware');
 
 // Rotas de filmes
-router.use('/filmes', filmesRoutes);
+router.use('/filmes', authMiddleware, filmesRoutes);
 
 // Rotas de gêneros
-router.get('/generos', GenerosController.list_generos);
+router.use('/generos', authMiddleware, generosRoutes);
 
 // Rotas de autenticação
 router.post('/auth/register', AuthController.register);

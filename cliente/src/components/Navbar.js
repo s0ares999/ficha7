@@ -50,7 +50,7 @@ export default function Layout({ children }) {
     const handleLogout = () => {
         AuthService.logout();
         setCurrentUser(null);
-        navigate('/login');
+        navigate('/');
     };
 
     const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
@@ -94,26 +94,22 @@ export default function Layout({ children }) {
                         <span className="navbar-toggler-icon"></span>
                     </button>
                     <div className="collapse navbar-collapse" id="navbarNav">
-                        <ul className="navbar-nav me-auto">
-                            <li className="nav-item">
-                                <Link 
-                                    className={`nav-link ${location.pathname === '/' ? 'active' : ''}`} 
-                                    to="/"
-                                >
-                                    <i className="bi bi-house-door me-1"></i>
-                                    Início
-                                </Link>
-                            </li>
-                            {currentUser && (
-                                <li className="nav-item">
-                                    <Link 
-                                        className={`nav-link ${location.pathname === '/create' ? 'active' : ''}`} 
-                                        to="/create"
-                                    >
-                                        <i className="bi bi-plus-circle me-1"></i>
-                                        Registar Filme
-                                    </Link>
-                                </li>
+                        <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+                            {isAuthenticated && (
+                                <>
+                                    <li className="nav-item">
+                                        <Link className={`nav-link ${location.pathname === '/create' ? 'active' : ''}`} to="/create">
+                                            <i className="bi bi-plus-circle-fill me-2"></i>
+                                            Adicionar Filme
+                                        </Link>
+                                    </li>
+                                    <li className="nav-item">
+                                        <Link className={`nav-link ${location.pathname === '/generos' ? 'active' : ''}`} to="/generos">
+                                            <i className="bi bi-tags me-2"></i>
+                                            Gerir Gêneros
+                                        </Link>
+                                    </li>
+                                </>
                             )}
                         </ul>
                         <ul className="navbar-nav">
@@ -127,13 +123,13 @@ export default function Layout({ children }) {
                                     </li>
                                     <li className="nav-item">
                                         <Link className="nav-link" onClick={handleRegisterClick}>
-                                            <i className="bi bi-person-plus me-1"></i>
-                                            Registar Conta
+                                            <i className="bi bi-person-plus-fill me-2"></i>
+                                            Registrar
                                         </Link>
                                     </li>
                                 </>
                             ) : (
-                                <li className="nav-item">
+                                <li className="nav-item dropdown">
                                     <Dropdown align="end">
                                         <Dropdown.Toggle as={CustomToggle} ref={dropdownRef}>
                                             {currentProfile?.name || 'Perfil'}
@@ -169,8 +165,6 @@ export default function Layout({ children }) {
                     </div>
                 </main>
             </div>
-
-
 
             <Login 
                 show={showLogin} 

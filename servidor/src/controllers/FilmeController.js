@@ -2,8 +2,10 @@ const Filme = require('../models/Filme');
 const path = require('path');
 const fs = require('fs');
 const Genero = require('../models/Genero');
+const BaseController = require('./BaseController');
+const FileUtil = require('../utils/FileUtil');
 
-class FilmeController {
+class FilmeController extends BaseController {
     async list(req, res) {
         try {
             console.log('Iniciando listagem de filmes');
@@ -13,21 +15,19 @@ class FilmeController {
             });
             
             console.log('Filmes encontrados:', filmes.length);
-            console.log('Dados dos filmes:', JSON.stringify(filmes, null, 2));
 
             // Adicionar URL completa para as fotos
             const filmesComURL = filmes.map(filme => {
                 const filmeJSON = filme.toJSON();
                 if (filmeJSON.foto) {
-                    filmeJSON.fotoUrl = `http://localhost:3000/uploads/${filmeJSON.foto}`;
+                    filmeJSON.fotoUrl = FileUtil.getFileUrl(filmeJSON.foto);
                 }
                 return filmeJSON;
             });
 
-            res.json(filmesComURL);
+            return this.sendSuccess(res, filmesComURL);
         } catch (error) {
-            console.error('Erro ao listar filmes:', error);
-            res.status(500).json({ message: 'Erro ao listar filmes' });
+            return this.handleError(error, res, 'Erro ao listar filmes');
         }
     }
 
@@ -38,13 +38,12 @@ class FilmeController {
             });
             
             if (!filme) {
-                return res.status(404).json({ message: 'Filme não encontrado' });
+                return this.sendNotFound(res, 'Filme não encontrado');
             }
             
-            res.json(filme);
+            return this.sendSuccess(res, filme);
         } catch (error) {
-            console.error('Erro ao buscar filme:', error);
-            res.status(500).json({ message: 'Erro ao buscar filme' });
+            return this.handleError(error, res, 'Erro ao buscar filme');
         }
     }
 
@@ -57,11 +56,11 @@ class FilmeController {
             const foto = req.file.filename;
 
             if (!titulo || !descricao || !genero_id) {
-                return res.status(400).json({ error: 'Dados incompletos' });
+                return this.sendBadRequest(res, 'Dados incompletos');
             }
 
             if (isNaN(genero_id)) {
-                return res.status(400).json({ error: 'ID de gênero inválido' });
+                return this.sendBadRequest(res, 'ID de gênero inválido');
             }
 
             const novoFilme = await Filme.create({
@@ -72,7 +71,7 @@ class FilmeController {
             });
 
             console.log('Filme criado:', novoFilme.toJSON());
-            res.status(201).json(novoFilme);
+            return this.sendCreated(res, novoFilme);
 
         } catch (error) {
             console.error('Erro detalhado:', {
@@ -81,7 +80,7 @@ class FilmeController {
                 body: req.body,
                 file: req.file
             });
-            res.status(500).json({ error: 'Erro interno do servidor' });
+            return this.handleError(error, res, 'Erro ao criar filme');
         }
     }
 
@@ -92,17 +91,14 @@ class FilmeController {
 
             const filme = await Filme.findByPk(id);
             if (!filme) {
-                return res.status(404).json({ message: 'Filme não encontrado' });
+                return this.sendNotFound(res, 'Filme não encontrado');
             }
 
             let fotoPath = filme.foto;
             if (req.file) {
                 // Se havia uma foto anterior, deleta
                 if (filme.foto) {
-                    const oldPath = path.join(__dirname, '../../uploads', filme.foto);
-                    if (fs.existsSync(oldPath)) {
-                        fs.unlinkSync(oldPath);
-                    }
+                    FileUtil.deleteFile(filme.foto);
                 }
                 fotoPath = req.file.filename;
             }
@@ -114,10 +110,9 @@ class FilmeController {
                 foto: fotoPath
             });
 
-            res.json(filme);
+            return this.sendSuccess(res, filme);
         } catch (error) {
-            console.error('Erro ao atualizar filme:', error);
-            res.status(500).json({ message: 'Erro ao atualizar filme' });
+            return this.handleError(error, res, 'Erro ao atualizar filme');
         }
     }
 
@@ -125,16 +120,21 @@ class FilmeController {
         try {
             const filme = await Filme.findByPk(req.params.id);
             if (!filme) {
-                return res.status(404).json({ error: 'Filme não encontrado' });
+                return this.sendNotFound(res, 'Filme não encontrado');
+            }
+
+            // Excluir o arquivo de foto, se existir
+            if (filme.foto) {
+                FileUtil.deleteFile(filme.foto);
             }
 
             await filme.destroy();
-            res.status(204).send();
+            return this.sendNoContent(res);
         } catch (error) {
-            console.error('Erro ao excluir filme:', error);
-            res.status(500).json({ error: 'Erro interno do servidor' });
+            return this.handleError(error, res, 'Erro ao excluir filme');
         }
     }
 }
 
-module.exports = new FilmeController(); 
+// Exportamos a classe em vez da instância
+module.exports = FilmeController; 
