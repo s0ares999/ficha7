@@ -11,7 +11,7 @@ class AuthService {
             console.log('Resposta do registro:', response.data);
             
             if (response.data.token) {
-                localStorage.setItem('user', JSON.stringify(response.data));
+                AuthService.setUserData(response.data);
             }
             return response.data;
         } catch (error) {
@@ -115,20 +115,34 @@ class AuthService {
     }
 
     async renovarToken() {
+        // Verifica se existe um token antes de tentar renová-lo
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('Nenhum token encontrado para renovar');
+            throw new Error('Nenhum token disponível');
+        }
+        
         try {
+            console.log('Tentando renovar token...');
             const response = await axios.post('http://localhost:3000/api/auth/refresh', {}, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`
+                    Authorization: `Bearer ${token}`
                 }
             });
             
             if (response.data && response.data.token) {
+                console.log('Token renovado com sucesso');
                 localStorage.setItem('token', response.data.token);
                 return response.data.token;
             }
             throw new Error('Token não retornado');
         } catch (error) {
-            AuthService.logout();
+            console.error('Erro ao renovar token:', error.message);
+            // Não fazer logout em caso de erro específico de renovação
+            // para não afetar o processo de login/registro
+            if (error.message !== 'Nenhum token disponível') {
+                AuthService.logout();
+            }
             throw error;
         }
     }
@@ -138,11 +152,35 @@ class AuthService {
 axios.interceptors.response.use(
     response => response,
     async error => {
+        const config = error.config;
+        
+        // Verifica se é um erro 401 (não autorizado)
         if (error.response?.status === 401) {
-            const novoToken = await new AuthService().renovarToken();
-            error.config.headers.Authorization = `Bearer ${novoToken}`;
-            return axios(error.config);
+            // Não tenta renovar token para rotas de autenticação (login/registro)
+            const isAuthRoute = config.url.includes('/auth/login') || 
+                                config.url.includes('/auth/register');
+            
+            // Se for uma rota de autenticação, apenas retorna o erro
+            if (isAuthRoute) {
+                return Promise.reject(error);
+            }
+            
+            try {
+                // Para outras rotas, tenta renovar o token se existir um token
+                if (localStorage.getItem('token')) {
+                    const novoToken = await new AuthService().renovarToken();
+                    config.headers.Authorization = `Bearer ${novoToken}`;
+                    return axios(config);
+                } else {
+                    // Se não houver token, apenas rejeita o erro
+                    return Promise.reject(error);
+                }
+            } catch (refreshError) {
+                // Se falhar ao renovar o token, rejeita o erro original
+                return Promise.reject(error);
+            }
         }
+        
         return Promise.reject(error);
     }
 );

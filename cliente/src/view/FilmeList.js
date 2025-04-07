@@ -148,6 +148,18 @@ export default function FilmeList() {
                 <span className="visually-hidden">Carregando...</span>
             </div>
             <p className="mt-3">Carregando filmes...</p>
+            
+            {/* Modais de Login e Registro */}
+            <Login 
+                show={showLogin} 
+                handleClose={() => setShowLogin(false)}
+                switchToRegister={switchToRegister}
+            />
+            <Register 
+                show={showRegister} 
+                handleClose={() => setShowRegister(false)}
+                switchToLogin={switchToLogin}
+            />
         </div>
     );
     
@@ -181,7 +193,7 @@ export default function FilmeList() {
                 </div>
             ) : (
                 <div className="text-center mt-4">
-                    <button onClick={handleLoginClick} className="btn btn-success btn-lg me-3">
+                    <button onClick={handleLoginClick} className="btn btn-danger btn-lg me-3">
                         <i className="bi bi-box-arrow-in-right me-2"></i>
                         Entrar
                     </button>
@@ -191,6 +203,18 @@ export default function FilmeList() {
                     </button>
                 </div>
             )}
+            
+            {/* Modais de Login e Registro */}
+            <Login 
+                show={showLogin} 
+                handleClose={() => setShowLogin(false)}
+                switchToRegister={switchToRegister}
+            />
+            <Register 
+                show={showRegister} 
+                handleClose={() => setShowRegister(false)}
+                switchToLogin={switchToLogin}
+            />
         </div>
     );
     
@@ -212,7 +236,7 @@ export default function FilmeList() {
                 ) : (
                     <div className="text-center mt-4">
                         <p>Faça login para adicionar novos filmes.</p>
-                        <button onClick={handleLoginClick} className="btn btn-success me-3">
+                        <button onClick={handleLoginClick} className="btn btn-danger me-3">
                             <i className="bi bi-box-arrow-in-right me-2"></i>
                             Entrar
                         </button>
@@ -223,6 +247,18 @@ export default function FilmeList() {
                     </div>
                 )}
             </div>
+            
+            {/* Modais de Login e Registro */}
+            <Login 
+                show={showLogin} 
+                handleClose={() => setShowLogin(false)}
+                switchToRegister={switchToRegister}
+            />
+            <Register 
+                show={showRegister} 
+                handleClose={() => setShowRegister(false)}
+                switchToLogin={switchToLogin}
+            />
         </div>
     );
 
@@ -426,6 +462,8 @@ export default function FilmeList() {
                     </nav>
                 )}
             </div>
+            
+            {/* Modais de Login e Registro */}
             <Login 
                 show={showLogin} 
                 handleClose={() => setShowLogin(false)}

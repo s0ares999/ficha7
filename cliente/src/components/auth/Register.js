@@ -23,15 +23,18 @@ export default function Register({ show, handleClose, switchToLogin }) {
 
         try {
             setLoading(true);
-            await AuthService.register({
+            const authService = new AuthService(); // Criar uma instância do serviço
+            const result = await authService.register({
                 name: formData.name,
                 email: formData.email,
                 password: formData.password
             });
             
+            console.log('Registro bem-sucedido:', result);
             handleClose();
             window.location.reload(); // Recarrega a página para atualizar o estado de autenticação
         } catch (error) {
+            console.error('Erro no registro:', error);
             setError(error.response?.data?.message || 'Erro ao registar. Tente novamente.');
         } finally {
             setLoading(false);
